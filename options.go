@@ -16,6 +16,13 @@ func WithLongPolling(timeout int) Option {
 	}
 }
 
+// WithPoller injects a custom Poller implementation (e.g. WebhookPoller).
+func WithPoller(p Poller) Option {
+	return func(b *Bot) {
+		b.poller = p
+	}
+}
+
 // WithClient injects a pre-configured maxigo-client (useful for testing).
 func WithClient(c *maxigo.Client) Option {
 	return func(b *Bot) {
