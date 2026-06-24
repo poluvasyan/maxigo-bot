@@ -32,6 +32,10 @@ type Context interface {
 	Sender() *maxigo.User
 	// Chat returns the chat ID where the update occurred (0 if unavailable).
 	Chat() int64
+	// Locale returns the user's locale (IETF BCP 47) from the update.
+	// Available for message_created, message_callback, and bot_started updates.
+	// Returns empty string for other update types or when the locale is not provided.
+	Locale() string
 
 	// Message returns the original message (nil for lifecycle hooks).
 	Message() *maxigo.Message
@@ -81,6 +85,7 @@ type updateMeta struct {
 	sender  *maxigo.User
 	chatID  int64
 	message *maxigo.Message
+	locale  string
 }
 
 // extractMeta extracts common fields from a concrete update type.
@@ -92,6 +97,7 @@ func extractMeta(update any) updateMeta {
 		m.sender = u.Message.Sender
 		m.chatID = derefInt64(u.Message.Recipient.ChatID)
 		m.message = &u.Message
+		m.locale = derefString(u.UserLocale)
 	case *maxigo.MessageCallbackUpdate:
 		m.base = u.Update
 		m.sender = &u.Callback.User
@@ -99,6 +105,7 @@ func extractMeta(update any) updateMeta {
 			m.chatID = derefInt64(u.Message.Recipient.ChatID)
 		}
 		m.message = u.Message
+		m.locale = derefString(u.UserLocale)
 	case *maxigo.MessageEditedUpdate:
 		m.base = u.Update
 		m.sender = u.Message.Sender
@@ -111,6 +118,7 @@ func extractMeta(update any) updateMeta {
 		m.base = u.Update
 		m.sender = &u.User
 		m.chatID = u.ChatID
+		m.locale = derefString(u.UserLocale)
 	case *maxigo.BotStoppedUpdate:
 		m.base = u.Update
 		m.sender = &u.User
@@ -183,6 +191,7 @@ func (c *nativeContext) Ctx() gocontext.Context {
 
 func (c *nativeContext) Sender() *maxigo.User    { return c.meta.sender }
 func (c *nativeContext) Chat() int64             { return c.meta.chatID }
+func (c *nativeContext) Locale() string           { return c.meta.locale }
 func (c *nativeContext) Message() *maxigo.Message { return c.meta.message }
 
 func (c *nativeContext) Text() string {
@@ -337,6 +346,13 @@ func (c *nativeContext) Set(key string, val any) {
 func derefInt64(p *int64) int64 {
 	if p == nil {
 		return 0
+	}
+	return *p
+}
+
+func derefString(p *string) string {
+	if p == nil {
+		return ""
 	}
 	return *p
 }

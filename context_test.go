@@ -135,6 +135,52 @@ func TestNativeContext_Chat(t *testing.T) {
 	}
 }
 
+func TestNativeContext_Locale(t *testing.T) {
+	bot := newTestBot()
+	locale := "ru"
+
+	tests := []struct {
+		name   string
+		update any
+		want   string
+	}{
+		{
+			"message_created",
+			&maxigo.MessageCreatedUpdate{UserLocale: &locale},
+			"ru",
+		},
+		{
+			"message_callback",
+			&maxigo.MessageCallbackUpdate{UserLocale: &locale},
+			"ru",
+		},
+		{
+			"bot_started",
+			&maxigo.BotStartedUpdate{UserLocale: &locale},
+			"ru",
+		},
+		{
+			"bot_stopped has no locale",
+			&maxigo.BotStoppedUpdate{},
+			"",
+		},
+		{
+			"nil locale",
+			&maxigo.MessageCreatedUpdate{},
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := newTestContext(bot, tt.update)
+			if got := ctx.Locale(); got != tt.want {
+				t.Errorf("Locale() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNativeContext_Message(t *testing.T) {
 	bot := newTestBot()
 

@@ -28,6 +28,7 @@ func (m *mockContext) API() *maxigo.Client        { return nil }
 func (m *mockContext) Ctx() gocontext.Context     { return gocontext.Background() }
 func (m *mockContext) Sender() *maxigo.User       { return m.sender }
 func (m *mockContext) Chat() int64                { return m.chatID }
+func (m *mockContext) Locale() string             { return "" }
 func (m *mockContext) Message() *maxigo.Message   { return m.message }
 func (m *mockContext) Text() string               { return m.text }
 func (m *mockContext) Command() string            { return "" }
